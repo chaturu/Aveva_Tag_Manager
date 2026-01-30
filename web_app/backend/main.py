@@ -11,11 +11,9 @@ from pydantic import BaseModel
 import zipfile
 import io
 
-# Add parent directory to path to import existing modules
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
-
-from aveva_parser import AvevaParser
-from extension_analyzer import ExtensionAnalyzer
+# Imports from local directory
+from .aveva_parser import AvevaParser
+from .extension_analyzer import ExtensionAnalyzer
 
 app = FastAPI()
 
