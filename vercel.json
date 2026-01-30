@@ -1,5 +1,5 @@
 {
-    "rewriteRoutes": [
+    "rewrites": [
         {
             "source": "/api/(.*)",
             "destination": "/web_app/backend/main.py"
