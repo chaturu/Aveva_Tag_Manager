@@ -21,7 +21,7 @@ git init
 git add .
 git commit -m "Initial commit for Vercel deployment"
 git branch -M main
-git remote add origin https://github.com/<your-username>/<your-repo-name>.git
+git remote add origin https://github.com/chaturu/Aveva_Tag_Manager
 git push -u origin main
 ```
 

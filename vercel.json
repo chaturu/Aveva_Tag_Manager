@@ -1,28 +1,10 @@
 {
-    "routes": [
+    "buildCommand": "cd web_app/frontend && npm install && npm run build",
+    "outputDirectory": "web_app/frontend/dist",
+    "rewrites": [
         {
-            "src": "/api/(.*)",
-            "dest": "/web_app/backend/main.py"
-        },
-        {
-            "handle": "filesystem"
-        },
-        {
-            "src": "/(.*)",
-            "dest": "/web_app/frontend/package.json"
-        }
-    ],
-    "builds": [
-        {
-            "src": "web_app/backend/main.py",
-            "use": "@vercel/python"
-        },
-        {
-            "src": "web_app/frontend/package.json",
-            "use": "@vercel/static-build",
-            "config": {
-                "distDir": "dist"
-            }
+            "source": "/api/(.*)",
+            "destination": "/api/index.py"
         }
     ]
 }
