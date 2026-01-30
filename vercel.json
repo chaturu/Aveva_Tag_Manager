@@ -1,0 +1,21 @@
+{
+    "rewriteRoutes": [
+        {
+            "source": "/api/(.*)",
+            "destination": "/web_app/backend/main.py"
+        }
+    ],
+    "builds": [
+        {
+            "src": "web_app/backend/main.py",
+            "use": "@vercel/python"
+        },
+        {
+            "src": "web_app/frontend/package.json",
+            "use": "@vercel/static-build",
+            "config": {
+                "distDir": "dist"
+            }
+        }
+    ]
+}
