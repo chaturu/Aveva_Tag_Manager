@@ -1,6 +1,7 @@
 {
     "buildCommand": "cd web_app/frontend && npm install && npm run build",
     "outputDirectory": "web_app/frontend/dist",
+    "trailingSlash": false,
     "rewrites": [
         {
             "source": "/api/(.*)",
