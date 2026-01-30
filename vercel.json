@@ -1,11 +1,15 @@
 {
     "buildCommand": "cd web_app/frontend && npm install && npm run build",
     "outputDirectory": "web_app/frontend/dist",
+    "framework": "vite",
     "trailingSlash": false,
     "rewrites": [
         {
             "source": "/api/(.*)",
             "destination": "/api/index.py"
+        },
+        {
+            "handle": "filesystem"
         },
         {
             "source": "/(.*)",
