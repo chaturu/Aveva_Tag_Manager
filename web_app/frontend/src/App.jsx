@@ -185,10 +185,15 @@ function App() {
                             dragActive ? "bg-blue-50 border-blue-500" : "bg-white border-blue-200 hover:bg-blue-50"
                         )}
                     >
-                        <p className="mb-4 text-sm text-gray-500">Drag & Drop your file here or</p>
+                        <p className="mb-4 text-sm text-gray-500">
+                            Drag & Drop your file here or<br />
+                            <span className="text-xs text-gray-400 block mt-1">
+                                (Use ZIP for files &gt; 4.5MB)
+                            </span>
+                        </p>
                         <label className="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 transition cursor-pointer font-medium text-sm">
                             Browse File
-                            <input type='file' className="hidden" accept=".csv" onChange={handleFileSelect} disabled={uploading} />
+                            <input type='file' className="hidden" accept=".csv,.zip" onChange={handleFileSelect} disabled={uploading} />
                         </label>
                     </div>
 

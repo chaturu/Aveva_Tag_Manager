@@ -59,8 +59,21 @@ async def upload_file(file: UploadFile = File(...)):
     session_id = str(uuid.uuid4())
     file_location = os.path.join(UPLOAD_DIR, f"{session_id}_{file.filename}")
     
-    with open(file_location, "wb+") as file_object:
-        shutil.copyfileobj(file.file, file_object)
+    if file.filename.lower().endswith(".zip"):
+        content = await file.read()
+        with zipfile.ZipFile(io.BytesIO(content)) as z:
+            csv_files = [n for n in z.namelist() if n.lower().endswith(".csv")]
+            if not csv_files:
+                raise HTTPException(status_code=400, detail="No CSV file found in ZIP")
+            
+            target_csv = csv_files[0]
+            with z.open(target_csv) as zf, open(file_location, "wb") as f:
+                shutil.copyfileobj(zf, f)
+            # Update filename to the extracted CSV name for reference
+            file.filename = target_csv 
+    else:
+        with open(file_location, "wb+") as file_object:
+            shutil.copyfileobj(file.file, file_object)
         
     try:
         # Validate by parsing
