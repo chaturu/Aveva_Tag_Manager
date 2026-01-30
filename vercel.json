@@ -1,8 +1,15 @@
 {
-    "rewrites": [
+    "routes": [
         {
-            "source": "/api/(.*)",
-            "destination": "/web_app/backend/main.py"
+            "src": "/api/(.*)",
+            "dest": "/web_app/backend/main.py"
+        },
+        {
+            "handle": "filesystem"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "/web_app/frontend/package.json"
         }
     ],
     "builds": [
