@@ -17,6 +17,10 @@ from .extension_analyzer import ExtensionAnalyzer
 
 app = FastAPI()
 
+@app.get("/")
+def read_root():
+    return {"message": "Hello from Backend! If you see this, the Frontend routing is missing."}
+
 # Allow CORS for local development
 app.add_middleware(
     CORSMiddleware,
