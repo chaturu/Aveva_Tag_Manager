@@ -5,6 +5,9 @@ import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { supabase } from './supabaseClient';
 import Login from './Login';
+import Admin from './Admin';
+import MyFiles from './MyFiles';
+import { Users } from 'lucide-react';
 
 function cn(...inputs) {
     return twMerge(clsx(inputs));
@@ -12,6 +15,7 @@ function cn(...inputs) {
 
 function App() {
     const [user, setUser] = useState(null);
+    const [role, setRole] = useState(null); // 'user', 'operator', 'admin'
     const [authLoading, setAuthLoading] = useState(true);
     const [session, setSession] = useState(null);
     const [uploading, setUploading] = useState(false);
@@ -25,35 +29,85 @@ function App() {
     useEffect(() => {
         // Check active sessions and sets the user
         supabase.auth.getSession().then(({ data: { session } }) => {
-            setUser(session?.user ?? null);
-            setAuthLoading(false);
+            handleSession(session);
         });
 
-        // Listen for changes on auth state (logged in, signed out, etc.)
+        // Listen for changes on auth state
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            setUser(session?.user ?? null);
-            setAuthLoading(false);
+            handleSession(session);
         });
 
         return () => subscription.unsubscribe();
     }, []);
 
+    const handleSession = async (session) => {
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+
+        if (currentUser) {
+            // Fetch Role
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', currentUser.id)
+                .single();
+
+            if (data) {
+                setRole(data.role);
+            } else {
+                setRole('user'); // Default
+            }
+        } else {
+            setRole(null);
+        }
+        setAuthLoading(false);
+    };
+
     const uploadFile = async (file) => {
-        if (!file) return;
+        if (!file || !user) return;
 
         setUploading(true);
-        const formData = new FormData();
-        formData.append('file', file);
+        setMessage(null);
 
         try {
+            // 1. Upload to Supabase Storage
+            const filename = `${Date.now()}_${file.name}`;
+            const filePath = `${user.id}/${filename}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('aveva-uploads')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            // 2. Save Metadata to DB
+            const { error: dbError } = await supabase
+                .from('user_files')
+                .insert({
+                    user_id: user.id,
+                    filename: file.name,
+                    storage_path: filePath,
+                    size: file.size
+                });
+
+            if (dbError) throw dbError;
+
+            // 3. (Optional) Continue with legacy processing if needed, 
+            // For now, let's keep the legacy flow working for the "Current Session" 
+            // by sending the file to backend as before. 
+            // Ideally, backend should download from Storage, but to minimize backend changes now:
+            const formData = new FormData();
+            formData.append('file', file);
+
             const res = await axios.post('/api/upload', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
             setSession(res.data);
-            setMessage({ type: 'success', text: 'File uploaded successfully!' });
+
+            setMessage({ type: 'success', text: 'File uploaded and saved to history!' });
         } catch (err) {
             console.error(err);
-            setMessage({ type: 'error', text: 'Upload failed: ' + (err.response?.data?.detail || err.message) });
+            setMessage({ type: 'error', text: 'Upload failed: ' + (err.message || err.response?.data?.detail) });
         } finally {
             setUploading(false);
         }
@@ -265,6 +319,14 @@ function App() {
                         <TabButton id="templates" icon={Layout} label="Extract Templates" active={activeTab} set={setActiveTab} />
                         <TabButton id="areas" icon={Layout} label="Extract Areas" active={activeTab} set={setActiveTab} />
                         <TabButton id="extensions" icon={Activity} label="Extensions & PLC" active={activeTab} set={setActiveTab} />
+
+                        <div className="my-2 border-t border-gray-200" />
+
+                        <TabButton id="myfiles" icon={FileText} label="My Files" active={activeTab} set={setActiveTab} />
+
+                        {role === 'admin' && (
+                            <TabButton id="admin" icon={Users} label="Admin Panel" active={activeTab} set={setActiveTab} />
+                        )}
                     </nav>
 
                     <div className="mt-8 bg-blue-50 p-4 rounded-lg border border-blue-100">
@@ -272,6 +334,7 @@ function App() {
                         <ul className="text-sm text-blue-800 space-y-1">
                             <li>Templates: {session.total_templates}</li>
                             <li>Areas: {session.total_areas}</li>
+                            <li>Role: <span className="uppercase font-bold">{role}</span></li>
                         </ul>
                     </div>
                 </aside>
@@ -284,6 +347,10 @@ function App() {
                             {message.text}
                         </div>
                     )}
+
+                    {activeTab === 'admin' && role === 'admin' && <Admin />}
+
+                    {activeTab === 'myfiles' && <MyFiles role={role} />}
 
                     {activeTab === 'templates' && (
                         <div className="h-full flex flex-col">
