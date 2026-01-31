@@ -1,14 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Upload, FileText, Layout, Activity, Download, CheckCircle, AlertCircle } from 'lucide-react';
+import { Upload, FileText, Layout, Activity, Download, CheckCircle, AlertCircle, LogOut } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { supabase } from './supabaseClient';
+import Login from './Login';
 
 function cn(...inputs) {
     return twMerge(clsx(inputs));
 }
 
 function App() {
+    const [user, setUser] = useState(null);
+    const [authLoading, setAuthLoading] = useState(true);
     const [session, setSession] = useState(null);
     const [uploading, setUploading] = useState(false);
     const [activeTab, setActiveTab] = useState('templates');
@@ -17,6 +21,22 @@ function App() {
     const [processing, setProcessing] = useState(false);
     const [dragActive, setDragActive] = useState(false);
     const [message, setMessage] = useState(null);
+
+    useEffect(() => {
+        // Check active sessions and sets the user
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setUser(session?.user ?? null);
+            setAuthLoading(false);
+        });
+
+        // Listen for changes on auth state (logged in, signed out, etc.)
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setUser(session?.user ?? null);
+            setAuthLoading(false);
+        });
+
+        return () => subscription.unsubscribe();
+    }, []);
 
     const uploadFile = async (file) => {
         if (!file) return;
@@ -76,7 +96,7 @@ function App() {
         if (selectedTemplates.length === 0) return;
         setProcessing(true);
         try {
-            const res = await axios.post('/api/extract/template', {
+            const res = await axios.post('/api/extract/templates', {
                 session_id: session.session_id,
                 templates: selectedTemplates
             }, { responseType: 'blob' });
@@ -95,7 +115,7 @@ function App() {
         if (selectedAreas.length === 0) return;
         setProcessing(true);
         try {
-            const res = await axios.post('/api/extract/area', {
+            const res = await axios.post('/api/extract/areas', {
                 session_id: session.session_id,
                 areas: selectedAreas
             }, { responseType: 'blob' });
@@ -165,40 +185,55 @@ function App() {
         }
     };
 
+    if (authLoading) {
+        return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    }
+
+    if (!user) {
+        return <Login />;
+    }
+
     if (!session) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-                <div className="bg-white p-8 rounded-xl shadow-xl max-w-md w-full text-center">
-                    <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-                        <Upload className="text-blue-600 w-8 h-8" />
-                    </div>
-                    <h1 className="text-2xl font-bold mb-2 text-gray-800">Aveva Tag Manager Web</h1>
-                    <p className="text-gray-500 mb-6">Upload your Aveva DB Dump CSV to get started.</p>
+            <div className="min-h-screen flex flex-col bg-gray-100 p-4">
+                <div className="w-full flex justify-end mb-4">
+                    <button onClick={() => supabase.auth.signOut()} className="text-gray-600 hover:text-red-500 flex items-center gap-1 text-sm font-medium">
+                        <LogOut className="w-4 h-4" /> Sign Out
+                    </button>
+                </div>
+                <div className="flex-1 flex items-center justify-center">
+                    <div className="bg-white p-8 rounded-xl shadow-xl max-w-md w-full text-center">
+                        <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                            <Upload className="text-blue-600 w-8 h-8" />
+                        </div>
+                        <h1 className="text-2xl font-bold mb-2 text-gray-800">Aveva Tag Manager Web</h1>
+                        <p className="text-gray-500 mb-6">Upload your Aveva DB Dump CSV to get started.</p>
 
-                    <div
-                        onDragEnter={handleDrag}
-                        onDragLeave={handleDrag}
-                        onDragOver={handleDrag}
-                        onDrop={handleDrop}
-                        className={cn(
-                            "flex flex-col items-center px-4 py-12 border-2 border-dashed rounded-lg transition-colors w-full",
-                            dragActive ? "bg-blue-50 border-blue-500" : "bg-white border-blue-200 hover:bg-blue-50"
-                        )}
-                    >
-                        <p className="mb-4 text-sm text-gray-500">
-                            Drag & Drop your file here or<br />
-                            <span className="text-xs text-gray-400 block mt-1">
-                                (Use ZIP for files &gt; 4.5MB)
-                            </span>
-                        </p>
-                        <label className="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 transition cursor-pointer font-medium text-sm">
-                            Browse File
-                            <input type='file' className="hidden" accept=".csv,.zip" onChange={handleFileSelect} disabled={uploading} />
-                        </label>
-                    </div>
+                        <div
+                            onDragEnter={handleDrag}
+                            onDragLeave={handleDrag}
+                            onDragOver={handleDrag}
+                            onDrop={handleDrop}
+                            className={cn(
+                                "flex flex-col items-center px-4 py-12 border-2 border-dashed rounded-lg transition-colors w-full",
+                                dragActive ? "bg-blue-50 border-blue-500" : "bg-white border-blue-200 hover:bg-blue-50"
+                            )}
+                        >
+                            <p className="mb-4 text-sm text-gray-500">
+                                Drag & Drop your file here or<br />
+                                <span className="text-xs text-gray-400 block mt-1">
+                                    (Use ZIP for files &gt; 4.5MB)
+                                </span>
+                            </p>
+                            <label className="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 transition cursor-pointer font-medium text-sm">
+                                Browse File
+                                <input type='file' className="hidden" accept=".csv,.zip" onChange={handleFileSelect} disabled={uploading} />
+                            </label>
+                        </div>
 
-                    {uploading && <p className="mt-4 text-sm text-gray-500 animate-pulse">Uploading and Parsing...</p>}
-                    {message && <div className={cn("mt-4 p-2 rounded text-sm", message.type === 'error' ? "bg-red-100 text-red-600" : "bg-green-100 text-green-600")}>{message.text}</div>}
+                        {uploading && <p className="mt-4 text-sm text-gray-500 animate-pulse">Uploading and Parsing...</p>}
+                        {message && <div className={cn("mt-4 p-2 rounded text-sm", message.type === 'error' ? "bg-red-100 text-red-600" : "bg-green-100 text-green-600")}>{message.text}</div>}
+                    </div>
                 </div>
             </div>
         );
@@ -216,7 +251,10 @@ function App() {
                         <FileText className="w-4 h-4" />
                         <span className="font-medium truncate max-w-[200px]">{session.filename}</span>
                     </div>
-                    <button onClick={() => setSession(null)} className="text-red-500 hover:text-red-700 font-medium">Reset</button>
+                    <button onClick={() => setSession(null)} className="text-gray-500 hover:text-gray-700 font-medium">Reset</button>
+                    <button onClick={() => supabase.auth.signOut()} className="text-red-500 hover:text-red-700 font-medium flex items-center gap-1 ml-2">
+                        <LogOut className="w-4 h-4" /> Sign Out
+                    </button>
                 </div>
             </header>
 
