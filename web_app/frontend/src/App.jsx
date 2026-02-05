@@ -4,7 +4,7 @@ import { Upload, FileText, Layout, Activity, Download, CheckCircle, AlertCircle,
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { supabase } from './supabaseClient';
-import Login from './Login';
+// Login component removed
 
 function cn(...inputs) {
     return twMerge(clsx(inputs));
@@ -23,19 +23,8 @@ function App() {
     const [message, setMessage] = useState(null);
 
     useEffect(() => {
-        // Check active sessions and sets the user
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setUser(session?.user ?? null);
-            setAuthLoading(false);
-        });
-
-        // Listen for changes on auth state (logged in, signed out, etc.)
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            setUser(session?.user ?? null);
-            setAuthLoading(false);
-        });
-
-        return () => subscription.unsubscribe();
+        // Auth removed
+        setAuthLoading(false);
     }, []);
 
     const uploadFile = async (file) => {
@@ -196,11 +185,6 @@ function App() {
     if (!session) {
         return (
             <div className="min-h-screen flex flex-col bg-gray-100 p-4">
-                <div className="w-full flex justify-end mb-4">
-                    <button onClick={() => supabase.auth.signOut()} className="text-gray-600 hover:text-red-500 flex items-center gap-1 text-sm font-medium">
-                        <LogOut className="w-4 h-4" /> Sign Out
-                    </button>
-                </div>
                 <div className="flex-1 flex items-center justify-center">
                     <div className="bg-white p-8 rounded-xl shadow-xl max-w-md w-full text-center">
                         <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
@@ -252,9 +236,6 @@ function App() {
                         <span className="font-medium truncate max-w-[200px]">{session.filename}</span>
                     </div>
                     <button onClick={() => setSession(null)} className="text-gray-500 hover:text-gray-700 font-medium">Reset</button>
-                    <button onClick={() => supabase.auth.signOut()} className="text-red-500 hover:text-red-700 font-medium flex items-center gap-1 ml-2">
-                        <LogOut className="w-4 h-4" /> Sign Out
-                    </button>
                 </div>
             </header>
 
