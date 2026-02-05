@@ -17,6 +17,7 @@ function App() {
     const [selectedAreas, setSelectedAreas] = useState([]);
     const [processing, setProcessing] = useState(false);
     const [message, setMessage] = useState(null);
+    const [dragActive, setDragActive] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [isSystemPlatformOpen, setIsSystemPlatformOpen] = useState(true);
 
@@ -52,6 +53,25 @@ function App() {
     };
 
     const handleFileSelect = (e) => uploadFile(e.target.files[0]);
+
+    const handleDrag = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.type === "dragenter" || e.type === "dragover") {
+            setDragActive(true);
+        } else if (e.type === "dragleave") {
+            setDragActive(false);
+        }
+    };
+
+    const handleDrop = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragActive(false);
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            uploadFile(e.dataTransfer.files[0]);
+        }
+    };
 
     const handleDownload = (url, filename) => {
         const link = document.createElement('a');
@@ -230,7 +250,16 @@ function App() {
                                             : "Aveva DB Dump CSV 파일을 업로드하여 태그 관리 및 주소 매핑 작업을 시작하세요."}
                                     </p>
 
-                                    <div className="group relative flex flex-col items-center px-8 py-12 border-4 border-dashed border-slate-100 rounded-3xl transition-all hover:border-indigo-400 hover:bg-indigo-50/20 bg-slate-50/50">
+                                    <div 
+                                        onDragEnter={handleDrag}
+                                        onDragLeave={handleDrag}
+                                        onDragOver={handleDrag}
+                                        onDrop={handleDrop}
+                                        className={cn(
+                                            "group relative flex flex-col items-center px-8 py-12 border-4 border-dashed rounded-3xl transition-all bg-slate-50/50",
+                                            dragActive ? "border-indigo-500 bg-indigo-50/30 scale-[1.02]" : "border-slate-100 hover:border-indigo-400 hover:bg-indigo-50/20"
+                                        )}
+                                    >
                                         <p className="mb-8 text-sm font-bold text-slate-400 leading-relaxed">
                                             DRAG & DROP YOUR FILE HERE<br />
                                             <span className="text-xs font-medium opacity-60">(.CSV OR .ZIP FOR LARGE FILES)</span>
