@@ -22,6 +22,17 @@ function App() {
 
     const uploadFile = async (file) => {
         if (!file) return;
+
+        // Vercel 4.5MB Limit Check
+        const MAX_SIZE = 4.5 * 1024 * 1024;
+        if (file.size > MAX_SIZE) {
+            setMessage({ 
+                type: 'error', 
+                text: `파일 크기가 너무 큽니다 (${(file.size / (1024 * 1024)).toFixed(2)}MB). Vercel 제한으로 인해 4.5MB 이하의 파일(또는 압축된 ZIP)만 업로드 가능합니다.` 
+            });
+            return;
+        }
+
         setUploading(true);
         const formData = new FormData();
         formData.append('file', file);
