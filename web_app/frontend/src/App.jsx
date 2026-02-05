@@ -11,8 +11,8 @@ function cn(...inputs) {
 }
 
 function App() {
-    const [user, setUser] = useState(null);
-    const [authLoading, setAuthLoading] = useState(true);
+    const [user, setUser] = useState({ id: 'guest' });
+    const [authLoading, setAuthLoading] = useState(false);
     const [session, setSession] = useState(null);
     const [uploading, setUploading] = useState(false);
     const [activeTab, setActiveTab] = useState('templates');
@@ -23,8 +23,7 @@ function App() {
     const [message, setMessage] = useState(null);
 
     useEffect(() => {
-        // Auth removed
-        setAuthLoading(false);
+        // No auth check needed
     }, []);
 
     const uploadFile = async (file) => {
