@@ -35,7 +35,33 @@ class IntouchManager:
         alarms_data = {}
         all_tags_data = {}
         
+        temp_csv_path = None
         try:
+            # Check if input is ZIP
+            if input_file_path.lower().endswith('.zip'):
+                print("ZIP file detected. Extracting...")
+                with zipfile.ZipFile(input_file_path, 'r') as zf:
+                    # Find CSV files
+                    csv_files = [f for f in zf.namelist() if f.lower().endswith('.csv')]
+                    if not csv_files:
+                        raise ValueError("No CSV file found in the ZIP archive.")
+                    
+                    # Pick largest CSV if multiple (assumption: database dump is the largest)
+                    target_csv = max(csv_files, key=lambda f: zf.getinfo(f).file_size)
+                    print(f"Extracting {target_csv}...")
+                    
+                    # Extract to a temporary path
+                    extracted_path = zf.extract(target_csv, self.upload_dir)
+                    
+                    # Rename to a temp filename we track
+                    temp_csv_path = os.path.join(self.upload_dir, f"temp_extracted_{session_id}.csv")
+                    if os.path.exists(temp_csv_path):
+                        os.remove(temp_csv_path)
+                    os.rename(extracted_path, temp_csv_path)
+                    
+                    # Update input path to point to the extracted CSV
+                    input_file_path = temp_csv_path
+
             with open(input_file_path, 'r', encoding=encoding, errors='replace') as infile:
                 reader = csv.reader(infile)
                 
@@ -105,6 +131,13 @@ class IntouchManager:
             import traceback
             traceback.print_exc()
             raise e
+        finally:
+            # Cleanup temp extracted CSV if we created one
+            if temp_csv_path and os.path.exists(temp_csv_path):
+                try:
+                    os.remove(temp_csv_path)
+                except:
+                    pass
 
     def create_session_zip(self, session_id: str, alarms_data: Dict, all_tags_data: Dict, extract_type: str = 'all') -> str:
         """Creates a single zip file containing Alarms and/or All Tags zips/folders based on extract_type."""

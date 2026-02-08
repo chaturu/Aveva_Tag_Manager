@@ -117,7 +117,7 @@ export default function Intouch({ mode, file, setFile, message, setMessage }) {
         <div className="h-full flex flex-col">
             <h2 className="text-lg font-bold mb-4">{config.title}</h2>
             <p className="text-gray-500 mb-6 text-sm">
-                {config.description}
+                {config.description} (대용량 파일의 경우 ZIP 압축 파일 업로드 가능)
             </p>
 
             <div className="flex-1 flex flex-col items-center justify-center p-6 bg-gray-50 rounded-lg border border-gray-200">
@@ -133,11 +133,11 @@ export default function Intouch({ mode, file, setFile, message, setMessage }) {
                         )}
                     >
                         <Upload className="w-10 h-10 text-gray-400 mb-4" />
-                        <p className="text-gray-600 font-medium mb-2">CSV 파일을 여기로 드래그 앤 드롭하세요</p>
+                        <p className="text-gray-600 font-medium mb-2">CSV 또는 ZIP 파일을 여기로 드래그 앤 드롭하세요</p>
                         <p className="text-sm text-gray-400 mb-4">또는 클릭하여 파일 찾기</p>
                         <label className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition cursor-pointer font-medium text-sm">
                             파일 선택
-                            <input type='file' className="hidden" accept=".csv" onChange={handleFileSelect} />
+                            <input type='file' className="hidden" accept=".csv,.zip" onChange={handleFileSelect} />
                         </label>
                     </div>
                 ) : (
