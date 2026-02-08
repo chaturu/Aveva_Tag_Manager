@@ -8,11 +8,40 @@ function cn(...inputs) {
     return twMerge(clsx(inputs));
 }
 
-export default function Intouch() {
+export default function Intouch({ mode }) {
     const [file, setFile] = useState(null);
     const [uploading, setUploading] = useState(false);
     const [message, setMessage] = useState(null);
     const [dragActive, setDragActive] = useState(false);
+
+    // Determine config based on mode
+    const getModeConfig = () => {
+        switch (mode) {
+            case 'tags':
+                return {
+                    title: "Intouch 태그 추출",
+                    description: "Intouch DB CSV 덤프 파일을 업로드하여 모든 태그 아이템을 추출하세요.",
+                    extractType: 'tags',
+                    buttonText: "태그 추출 및 다운로드"
+                };
+            case 'alarms':
+                return {
+                    title: "Intouch 알람 추출",
+                    description: "Intouch DB CSV 덤프 파일을 업로드하여 알람 설정 데이터를 추출하세요.",
+                    extractType: 'alarms',
+                    buttonText: "알람 추출 및 다운로드"
+                };
+            default:
+                return {
+                    title: "Intouch 데이터 추출 (통합)",
+                    description: "Intouch DB CSV 덤프 파일을 업로드하여 알람 및 태그 데이터를 모두 추출하세요.",
+                    extractType: 'all',
+                    buttonText: "데이터 추출 및 다운로드"
+                };
+        }
+    };
+
+    const config = getModeConfig();
 
     const handleFileSelect = (e) => {
         if (e.target.files && e.target.files[0]) {
@@ -49,6 +78,7 @@ export default function Intouch() {
 
         const formData = new FormData();
         formData.append('file', file);
+        formData.append('extract_type', config.extractType);
 
         try {
             const res = await axios.post('/api/intouch/process', formData, {
@@ -57,7 +87,7 @@ export default function Intouch() {
             });
 
             // Extract filename from content-disposition if possible, else default
-            let filename = `Intouch_Export_${Date.now()}.zip`;
+            let filename = `Intouch_Export_${config.extractType}_${Date.now()}.zip`;
             const disposition = res.headers['content-disposition'];
             if (disposition && disposition.indexOf('attachment') !== -1) {
                 const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
@@ -87,9 +117,9 @@ export default function Intouch() {
 
     return (
         <div className="h-full flex flex-col">
-            <h2 className="text-lg font-bold mb-4">Intouch 데이터 추출 (태그/알람)</h2>
+            <h2 className="text-lg font-bold mb-4">{config.title}</h2>
             <p className="text-gray-500 mb-6 text-sm">
-                Intouch DB CSV 덤프 파일을 업로드하여 알람 및 태그 아이템 이름을 추출하세요.
+                {config.description}
             </p>
 
             <div className="flex-1 flex flex-col items-center justify-center p-6 bg-gray-50 rounded-lg border border-gray-200">
@@ -133,7 +163,7 @@ export default function Intouch() {
                                 disabled={uploading}
                                 className="flex-1 py-2 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition flex items-center justify-center gap-2"
                             >
-                                {uploading ? "처리 중..." : <><Download className="w-4 h-4" /> 추출 및 다운로드</>}
+                                {uploading ? "처리 중..." : <><Download className="w-4 h-4" /> {config.buttonText}</>}
                             </button>
                         </div>
                     </div>

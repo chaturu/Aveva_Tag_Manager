@@ -233,10 +233,10 @@ function App() {
                             active={activeMenu}
                             set={setActiveMenu}
                         />
-                        {activeMenu === 'intouch' && session && (
+                        {activeMenu === 'intouch' && (
                             <div className="mt-1 ml-4 flex flex-col gap-1 border-l border-slate-800">
-                                {/* Future InTouch features can go here */}
-                                <div className="px-4 py-2 text-xs font-medium text-slate-600">Coming Soon</div>
+                                <SidebarSubItem id="tags" label="Tag Extraction" active={activeSubMenu} set={setActiveSubMenu} />
+                                <SidebarSubItem id="alarms" label="Alarm Extraction" active={activeSubMenu} set={setActiveSubMenu} />
                             </div>
                         )}
                     </div>
@@ -452,7 +452,7 @@ function App() {
                         )}
 
                         {/* INTOUCH VIEW */}
-                        {activeMenu === 'intouch' && <Intouch />}
+                        {activeMenu === 'intouch' && <Intouch mode={activeSubMenu} />}
 
                     </div>
                 </main>

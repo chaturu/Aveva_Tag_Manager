@@ -4,7 +4,7 @@ import shutil
 import uuid
 import csv
 from typing import List, Optional
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Form
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -289,7 +289,7 @@ def analyze_extensions(req: AnalyzeExtensionsRequest):
     )
 
 @app.post("/api/intouch/process")
-async def process_intouch_file(file: UploadFile = File(...)):
+async def process_intouch_file(file: UploadFile = File(...), extract_type: str = Form("all")):
     session_id = str(uuid.uuid4())
     file_location = os.path.join(UPLOAD_DIR, f"{session_id}_{file.filename}")
     
@@ -298,7 +298,7 @@ async def process_intouch_file(file: UploadFile = File(...)):
             shutil.copyfileobj(file.file, file_object)
             
         manager = IntouchManager(UPLOAD_DIR)
-        zip_path = manager.process_file(file_location, session_id)
+        zip_path = manager.process_file(file_location, session_id, extract_type)
         
         filename = os.path.basename(zip_path)
         

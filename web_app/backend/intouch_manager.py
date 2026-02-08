@@ -23,7 +23,7 @@ class IntouchManager:
         except ValueError:
             return -1
 
-    def process_file(self, input_file_path: str, session_id: str) -> str:
+    def process_file(self, input_file_path: str, session_id: str, extract_type: str = 'all') -> str:
         """
         Processes the Intouch CSV file and returns the path to the generated ZIP file.
         """
@@ -99,15 +99,15 @@ class IntouchManager:
                                 alarms_data[access_name].append([tag_formatted, item_name])
 
             # Create final ZIP
-            return self.create_session_zip(session_id, alarms_data, all_tags_data)
+            return self.create_session_zip(session_id, alarms_data, all_tags_data, extract_type)
             
         except Exception as e:
             import traceback
             traceback.print_exc()
             raise e
 
-    def create_session_zip(self, session_id: str, alarms_data: Dict, all_tags_data: Dict) -> str:
-        """Creates a single zip file containing both Alarms and All Tags zips/folders."""
+    def create_session_zip(self, session_id: str, alarms_data: Dict, all_tags_data: Dict, extract_type: str = 'all') -> str:
+        """Creates a single zip file containing Alarms and/or All Tags zips/folders based on extract_type."""
         
         output_zip_name = f"Intouch_Export_{session_id}.zip"
         output_zip_path = os.path.join(self.upload_dir, output_zip_name)
@@ -131,7 +131,10 @@ class IntouchManager:
                     zip_path = f"{folder_prefix}_{timestamp}/{csv_filename}"
                     main_zip.writestr(zip_path, csv_io.getvalue().encode('utf-8-sig'))
 
-            add_dataset_to_zip(alarms_data, "Alarms")
-            add_dataset_to_zip(all_tags_data, "All_Tags")
+            if extract_type in ['all', 'alarms']:
+                add_dataset_to_zip(alarms_data, "Alarms")
+            
+            if extract_type in ['all', 'tags']:
+                add_dataset_to_zip(all_tags_data, "All_Tags")
 
         return output_zip_path
