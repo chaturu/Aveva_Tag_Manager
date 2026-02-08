@@ -99,6 +99,16 @@ async def upload_file(file: UploadFile = File(...)):
             areas=areas
         )
         
+    except UnicodeError:
+        if os.path.exists(file_location):
+            try:
+                os.remove(file_location)
+            except:
+                pass
+        raise HTTPException(
+            status_code=400, 
+            detail="File encoding error. System Platform expects a Galaxy Dump (UTF-16). If you are uploading an InTouch file, please use the InTouch menu."
+        )
     except Exception as e:
         if os.path.exists(file_location):
             try:
