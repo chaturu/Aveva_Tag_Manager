@@ -1,0 +1,151 @@
+import React, { useState } from 'react';
+import axios from 'axios';
+import { Upload, Download, AlertCircle, CheckCircle, FileText } from 'lucide-react';
+import { clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+function cn(...inputs) {
+    return twMerge(clsx(inputs));
+}
+
+export default function Intouch() {
+    const [file, setFile] = useState(null);
+    const [uploading, setUploading] = useState(false);
+    const [message, setMessage] = useState(null);
+    const [dragActive, setDragActive] = useState(false);
+
+    const handleFileSelect = (e) => {
+        if (e.target.files && e.target.files[0]) {
+            setFile(e.target.files[0]);
+            setMessage(null);
+        }
+    };
+
+    const handleDrag = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.type === "dragenter" || e.type === "dragover") {
+            setDragActive(true);
+        } else if (e.type === "dragleave") {
+            setDragActive(false);
+        }
+    };
+
+    const handleDrop = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragActive(false);
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            setFile(e.dataTransfer.files[0]);
+            setMessage(null);
+        }
+    };
+
+    const handleProcess = async () => {
+        if (!file) return;
+
+        setUploading(true);
+        setMessage(null);
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const res = await axios.post('/api/intouch/process', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+                responseType: 'blob'
+            });
+
+            // Extract filename from content-disposition if possible, else default
+            let filename = `Intouch_Export_${Date.now()}.zip`;
+            const disposition = res.headers['content-disposition'];
+            if (disposition && disposition.indexOf('attachment') !== -1) {
+                const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                const matches = filenameRegex.exec(disposition);
+                if (matches != null && matches[1]) {
+                    filename = matches[1].replace(/['"]/g, '');
+                }
+            }
+
+            const url = window.URL.createObjectURL(new Blob([res.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', filename);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+
+            setMessage({ type: 'success', text: 'File processed and downloaded successfully!' });
+            setFile(null); // Reset after success
+        } catch (err) {
+            console.error(err);
+            setMessage({ type: 'error', text: 'Processing failed: ' + (err.message) });
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    return (
+        <div className="h-full flex flex-col">
+            <h2 className="text-lg font-bold mb-4">Intouch Extraction</h2>
+            <p className="text-gray-500 mb-6 text-sm">
+                Upload your Intouch DB CSV dump to extract Alarms and Tag Item Names.
+            </p>
+
+            <div className="flex-1 flex flex-col items-center justify-center p-6 bg-gray-50 rounded-lg border border-gray-200">
+                {!file ? (
+                    <div
+                        onDragEnter={handleDrag}
+                        onDragLeave={handleDrag}
+                        onDragOver={handleDrag}
+                        onDrop={handleDrop}
+                        className={cn(
+                            "flex flex-col items-center justify-center p-10 border-2 border-dashed rounded-lg transition-colors w-full max-w-lg cursor-pointer",
+                            dragActive ? "bg-blue-50 border-blue-500" : "bg-white border-gray-300 hover:bg-gray-100"
+                        )}
+                    >
+                        <Upload className="w-10 h-10 text-gray-400 mb-4" />
+                        <p className="text-gray-600 font-medium mb-2">Drag & drop CSV file here</p>
+                        <p className="text-sm text-gray-400 mb-4">or click to browse</p>
+                        <label className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition cursor-pointer font-medium text-sm">
+                            Browse File
+                            <input type='file' className="hidden" accept=".csv" onChange={handleFileSelect} />
+                        </label>
+                    </div>
+                ) : (
+                    <div className="w-full max-w-lg bg-white p-6 rounded-lg shadow-sm border flex flex-col items-center">
+                        <div className="bg-indigo-50 p-4 rounded-full mb-4">
+                            <FileText className="w-8 h-8 text-indigo-600" />
+                        </div>
+                        <h3 className="font-medium text-gray-900 mb-1">{file.name}</h3>
+                        <p className="text-sm text-gray-500 mb-6">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+
+                        <div className="flex gap-3 w-full">
+                            <button
+                                onClick={() => setFile(null)}
+                                className="flex-1 py-2 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
+                                disabled={uploading}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleProcess}
+                                disabled={uploading}
+                                className="flex-1 py-2 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition flex items-center justify-center gap-2"
+                            >
+                                {uploading ? "Processing..." : <><Download className="w-4 h-4" /> Process & Download</>}
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {message && (
+                    <div className={cn("mt-6 p-3 rounded-lg flex items-center gap-2 w-full max-w-lg", message.type === 'error' ? "bg-red-50 text-red-600 border border-red-100" : "bg-green-50 text-green-600 border border-green-100")}>
+                        {message.type === 'error' ? <AlertCircle className="w-5 h-5 flex-shrink-0" /> : <CheckCircle className="w-5 h-5 flex-shrink-0" />}
+                        <span className="text-sm font-medium">{message.text}</span>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}

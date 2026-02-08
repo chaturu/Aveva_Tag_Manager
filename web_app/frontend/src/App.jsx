@@ -7,6 +7,7 @@ import { supabase } from './supabaseClient';
 import Login from './Login';
 import Admin from './Admin';
 import MyFiles from './MyFiles';
+import Intouch from './Intouch';
 import { Users } from 'lucide-react';
 
 function cn(...inputs) {
@@ -319,6 +320,7 @@ function App() {
                         <TabButton id="templates" icon={Layout} label="Extract Templates" active={activeTab} set={setActiveTab} />
                         <TabButton id="areas" icon={Layout} label="Extract Areas" active={activeTab} set={setActiveTab} />
                         <TabButton id="extensions" icon={Activity} label="Extensions & PLC" active={activeTab} set={setActiveTab} />
+                        <TabButton id="intouch" icon={Activity} label="Intouch" active={activeTab} set={setActiveTab} />
 
                         <div className="my-2 border-t border-gray-200" />
 
@@ -349,6 +351,8 @@ function App() {
                     )}
 
                     {activeTab === 'admin' && role === 'admin' && <Admin />}
+
+                    {activeTab === 'intouch' && <Intouch />}
 
                     {activeTab === 'myfiles' && <MyFiles role={role} />}
 

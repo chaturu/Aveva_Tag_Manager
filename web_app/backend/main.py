@@ -14,6 +14,7 @@ import io
 # Imports from local directory
 from .aveva_parser import AvevaParser
 from .extension_analyzer import ExtensionAnalyzer
+from .intouch_manager import IntouchManager
 
 app = FastAPI()
 
@@ -276,4 +277,32 @@ def analyze_extensions(req: AnalyzeExtensionsRequest):
         media_type="text/csv",
         headers={"Content-Disposition": "attachment; filename=extensions_report.csv"}
     )
+
+@app.post("/api/intouch/process")
+async def process_intouch_file(file: UploadFile = File(...)):
+    session_id = str(uuid.uuid4())
+    file_location = os.path.join(UPLOAD_DIR, f"{session_id}_{file.filename}")
+    
+    try:
+        with open(file_location, "wb+") as file_object:
+            shutil.copyfileobj(file.file, file_object)
+            
+        manager = IntouchManager(UPLOAD_DIR)
+        zip_path = manager.process_file(file_location, session_id)
+        
+        filename = os.path.basename(zip_path)
+        
+        return FileResponse(
+            zip_path, 
+            media_type='application/zip', 
+            filename=filename
+        )
+        
+    except Exception as e:
+        if os.path.exists(file_location):
+            try:
+                os.remove(file_location)
+            except:
+                pass
+        raise HTTPException(status_code=400, detail=f"Failed to process Intouch file: {str(e)}")
 
