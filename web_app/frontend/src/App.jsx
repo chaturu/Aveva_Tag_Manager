@@ -22,6 +22,11 @@ function App() {
     const [selectedAreas, setSelectedAreas] = useState([]);
     const [processing, setProcessing] = useState(false);
     const [message, setMessage] = useState(null);
+
+    // Intouch State
+    const [intouchFile, setIntouchFile] = useState(null);
+    const [intouchMessage, setIntouchMessage] = useState(null);
+
     const [dragActive, setDragActive] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
@@ -145,41 +150,32 @@ function App() {
 
     // Helper to render the upload screen
     const renderUploadScreen = (title, description) => (
-        <div className="flex flex-col items-center justify-center min-h-[60vh]">
-            <div className="bg-white p-12 rounded-3xl shadow-xl max-w-xl w-full text-center border border-slate-100">
-                <div className="mx-auto w-24 h-24 bg-indigo-600 rounded-3xl flex items-center justify-center mb-8 shadow-xl shadow-indigo-100 rotate-6 hover:rotate-0 transition-transform duration-500">
-                    <Upload className="text-white w-12 h-12" />
-                </div>
-                <h1 className="text-3xl font-black mb-4 text-slate-800 tracking-tight">{title}</h1>
-                <p className="text-slate-500 mb-10 font-medium text-lg leading-relaxed">{description}</p>
-
-                <div
-                    onDragEnter={handleDrag}
-                    onDragLeave={handleDrag}
-                    onDragOver={handleDrag}
-                    onDrop={handleDrop}
-                    className={cn(
-                        "group relative flex flex-col items-center px-8 py-12 border-4 border-dashed rounded-3xl transition-all bg-slate-50/50",
-                        dragActive ? "border-indigo-500 bg-indigo-50/30 scale-[1.02]" : "border-slate-100 hover:border-indigo-400 hover:bg-indigo-50/20"
-                    )}
-                >
-                    <p className="mb-8 text-sm font-bold text-slate-400 leading-relaxed">
-                        DRAG & DROP YOUR FILE HERE<br />
-                        <span className="text-xs font-medium opacity-60">(.CSV OR .ZIP FOR LARGE FILES)</span>
-                    </p>
-                    <label className="bg-indigo-600 text-white px-10 py-4 rounded-2xl shadow-xl shadow-indigo-200 hover:bg-indigo-700 hover:scale-105 active:scale-95 transition-all cursor-pointer font-black text-base">
-                        {uploading ? "Analyzing..." : "Browse Local File"}
-                        <input type='file' className="hidden" accept=".csv,.zip" onChange={handleFileSelect} disabled={uploading} />
-                    </label>
-                </div>
-
-                {uploading && (
-                    <div className="mt-8 flex flex-col items-center gap-3">
-                        <div className="w-10 h-10 border-4 border-slate-100 border-t-indigo-600 rounded-full animate-spin"></div>
-                        <p className="text-sm font-black text-slate-600">데이터 처리 중입니다...</p>
-                    </div>
+        <div className="flex-1 flex flex-col items-center justify-center p-6 bg-gray-50 rounded-lg border border-gray-200">
+            <div
+                onDragEnter={handleDrag}
+                onDragLeave={handleDrag}
+                onDragOver={handleDrag}
+                onDrop={handleDrop}
+                className={cn(
+                    "flex flex-col items-center justify-center p-10 border-2 border-dashed rounded-lg transition-colors w-full max-w-lg cursor-pointer",
+                    dragActive ? "bg-blue-50 border-blue-500" : "bg-white border-gray-300 hover:bg-gray-100"
                 )}
+            >
+                <Upload className="w-10 h-10 text-gray-400 mb-4" />
+                <p className="text-gray-600 font-medium mb-2">{title}</p>
+                <p className="text-sm text-gray-400 mb-4">{description}</p>
+                <label className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition cursor-pointer font-medium text-sm">
+                    {uploading ? "Analyzing..." : "Browse Local File"}
+                    <input type='file' className="hidden" accept=".csv,.zip" onChange={handleFileSelect} disabled={uploading} />
+                </label>
             </div>
+
+            {uploading && (
+                <div className="mt-8 flex flex-col items-center gap-3">
+                    <div className="w-10 h-10 border-4 border-slate-100 border-t-indigo-600 rounded-full animate-spin"></div>
+                    <p className="text-sm font-black text-slate-600">데이터 처리 중입니다...</p>
+                </div>
+            )}
         </div>
     );
 
@@ -452,7 +448,15 @@ function App() {
                         )}
 
                         {/* INTOUCH VIEW */}
-                        {activeMenu === 'intouch' && <Intouch mode={activeSubMenu} />}
+                        {activeMenu === 'intouch' && (
+                            <Intouch
+                                mode={activeSubMenu}
+                                file={intouchFile}
+                                setFile={setIntouchFile}
+                                message={intouchMessage}
+                                setMessage={setIntouchMessage}
+                            />
+                        )}
 
                     </div>
                 </main>

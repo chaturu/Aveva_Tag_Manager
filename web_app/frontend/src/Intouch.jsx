@@ -8,10 +8,8 @@ function cn(...inputs) {
     return twMerge(clsx(inputs));
 }
 
-export default function Intouch({ mode }) {
-    const [file, setFile] = useState(null);
+export default function Intouch({ mode, file, setFile, message, setMessage }) {
     const [uploading, setUploading] = useState(false);
-    const [message, setMessage] = useState(null);
     const [dragActive, setDragActive] = useState(false);
 
     // Determine config based on mode
