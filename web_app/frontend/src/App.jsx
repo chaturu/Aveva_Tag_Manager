@@ -211,7 +211,7 @@ function App() {
                             active={activeMenu}
                             set={setActiveMenu}
                         />
-                        {activeMenu === 'system_platform' && session && (
+                        {activeMenu === 'system_platform' && (
                             <div className="mt-1 ml-4 flex flex-col gap-1 border-l border-slate-800">
                                 <SidebarSubItem id="templates" label="Extract Templates" active={activeSubMenu} set={setActiveSubMenu} />
                                 <SidebarSubItem id="areas" label="Extract Areas" active={activeSubMenu} set={setActiveSubMenu} />
@@ -329,122 +329,122 @@ function App() {
 
                         {/* SYSTEM PLATFORM VIEW */}
                         {activeMenu === 'system_platform' && (
-                            <>
-                                {!session ? (
-                                    renderUploadScreen("System Platform Upload", "Galaxy Dump CSV 파일을 업로드하여 템플릿과 영역 정보를 분석하세요.")
-                                ) : (
-                                    <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden min-h-[500px]">
-                                        {activeSubMenu === 'templates' && (
-                                            <div className="p-10">
-                                                <h2 className="text-3xl font-black text-slate-800 mb-2">Template Extraction</h2>
-                                                <p className="text-slate-500 mb-10 font-medium">추출할 템플릿을 선택하세요. $Area 속성은 자동으로 포함됩니다.</p>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10 max-h-[500px] overflow-y-auto p-1 custom-scrollbar">
-                                                    {session.templates.map(tmpl => (
-                                                        <label key={tmpl} className={cn(
-                                                            "flex items-center gap-4 p-5 rounded-2xl border-2 transition-all cursor-pointer",
-                                                            selectedTemplates.includes(tmpl) ? "bg-indigo-50 border-indigo-500 text-indigo-700 shadow-md shadow-indigo-50" : "bg-white border-slate-100 hover:border-slate-300"
-                                                        )}>
-                                                            <input
-                                                                type="checkbox"
-                                                                className="w-6 h-6 rounded-lg border-slate-300 text-indigo-600 focus:ring-indigo-500"
-                                                                checked={selectedTemplates.includes(tmpl)}
-                                                                onChange={(e) => {
-                                                                    if (e.target.checked) setSelectedTemplates([...selectedTemplates, tmpl]);
-                                                                    else setSelectedTemplates(selectedTemplates.filter(t => t !== tmpl));
-                                                                }}
-                                                            />
-                                                            <span className="text-base font-bold truncate">{tmpl}</span>
-                                                        </label>
-                                                    ))}
-                                                </div>
-                                                <div className="flex justify-between items-center pt-8 border-t border-slate-100">
-                                                    <div className="text-slate-500 font-bold">
-                                                        <span className="text-indigo-600 text-2xl pr-1">{selectedTemplates.length}</span> templates selected
-                                                    </div>
-                                                    <button
-                                                        onClick={extractTemplates}
-                                                        disabled={processing || selectedTemplates.length === 0}
-                                                        className="bg-indigo-600 text-white px-10 py-4 rounded-2xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 font-black shadow-xl shadow-indigo-100 transition-all active:scale-95"
-                                                    >
-                                                        {processing ? "Processing..." : <><Download className="w-6 h-6" /> Extract & Download</>}
-                                                    </button>
-                                                </div>
+                            <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden min-h-[500px]">
+                                {activeSubMenu === 'templates' && (
+                                    !session ? renderUploadScreen("Template Extraction", "Galaxy Dump CSV 파일을 업로드하여 템플릿과 영역 정보를 분석하세요.") : (
+                                        <div className="p-10">
+                                            <h2 className="text-3xl font-black text-slate-800 mb-2">Template Extraction</h2>
+                                            <p className="text-slate-500 mb-10 font-medium">추출할 템플릿을 선택하세요. $Area 속성은 자동으로 포함됩니다.</p>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10 max-h-[500px] overflow-y-auto p-1 custom-scrollbar">
+                                                {session.templates.map(tmpl => (
+                                                    <label key={tmpl} className={cn(
+                                                        "flex items-center gap-4 p-5 rounded-2xl border-2 transition-all cursor-pointer",
+                                                        selectedTemplates.includes(tmpl) ? "bg-indigo-50 border-indigo-500 text-indigo-700 shadow-md shadow-indigo-50" : "bg-white border-slate-100 hover:border-slate-300"
+                                                    )}>
+                                                        <input
+                                                            type="checkbox"
+                                                            className="w-6 h-6 rounded-lg border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                                                            checked={selectedTemplates.includes(tmpl)}
+                                                            onChange={(e) => {
+                                                                if (e.target.checked) setSelectedTemplates([...selectedTemplates, tmpl]);
+                                                                else setSelectedTemplates(selectedTemplates.filter(t => t !== tmpl));
+                                                            }}
+                                                        />
+                                                        <span className="text-base font-bold truncate">{tmpl}</span>
+                                                    </label>
+                                                ))}
                                             </div>
-                                        )}
-
-                                        {activeSubMenu === 'areas' && (
-                                            <div className="p-10">
-                                                <h2 className="text-3xl font-black text-slate-800 mb-2">Area Extraction</h2>
-                                                <p className="text-slate-500 mb-10 font-medium">데이터를 필터링할 Area를 선택하세요. 선택한 Area에 해당하는 행만 유지됩니다.</p>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10 max-h-[500px] overflow-y-auto p-1 custom-scrollbar">
-                                                    {session.areas.map(area => (
-                                                        <label key={area} className={cn(
-                                                            "flex items-center gap-4 p-5 rounded-2xl border-2 transition-all cursor-pointer",
-                                                            selectedAreas.includes(area) ? "bg-indigo-50 border-indigo-500 text-indigo-700 shadow-md shadow-indigo-50" : "bg-white border-slate-100 hover:border-slate-300"
-                                                        )}>
-                                                            <input
-                                                                type="checkbox"
-                                                                className="w-6 h-6 rounded-lg border-slate-300 text-indigo-600 focus:ring-indigo-500"
-                                                                checked={selectedAreas.includes(area)}
-                                                                onChange={(e) => {
-                                                                    if (e.target.checked) setSelectedAreas([...selectedAreas, area]);
-                                                                    else setSelectedAreas(selectedAreas.filter(a => a !== area));
-                                                                }}
-                                                            />
-                                                            <span className="text-base font-bold truncate">{area}</span>
-                                                        </label>
-                                                    ))}
+                                            <div className="flex justify-between items-center pt-8 border-t border-slate-100">
+                                                <div className="text-slate-500 font-bold">
+                                                    <span className="text-indigo-600 text-2xl pr-1">{selectedTemplates.length}</span> templates selected
                                                 </div>
-                                                <div className="flex justify-between items-center pt-8 border-t border-slate-100">
-                                                    <div className="text-slate-500 font-bold">
-                                                        <span className="text-indigo-600 text-2xl pr-1">{selectedAreas.length}</span> areas selected
-                                                    </div>
-                                                    <button
-                                                        onClick={extractAreas}
-                                                        disabled={processing || selectedAreas.length === 0}
-                                                        className="bg-indigo-600 text-white px-10 py-4 rounded-2xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 font-black shadow-xl shadow-indigo-100 transition-all active:scale-95"
-                                                    >
-                                                        {processing ? "Processing..." : <><Download className="w-6 h-6" /> Extract & Download</>}
-                                                    </button>
-                                                </div>
+                                                <button
+                                                    onClick={extractTemplates}
+                                                    disabled={processing || selectedTemplates.length === 0}
+                                                    className="bg-indigo-600 text-white px-10 py-4 rounded-2xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 font-black shadow-xl shadow-indigo-100 transition-all active:scale-95"
+                                                >
+                                                    {processing ? "Processing..." : <><Download className="w-6 h-6" /> Extract & Download</>}
+                                                </button>
                                             </div>
-                                        )}
-
-                                        {activeSubMenu === 'extensions' && (
-                                            <div className="p-10 space-y-12">
-                                                <section className="bg-slate-50/50 p-8 rounded-3xl border border-slate-100">
-                                                    <h2 className="text-2xl font-black text-slate-800 mb-2">Extension Analysis</h2>
-                                                    <p className="text-slate-500 mb-8 font-medium">모든 템플릿의 `Extensions(MxBigString)` 열을 분석하여 상세 보고서를 생성합니다.</p>
-                                                    <button onClick={analyzeExtensions} disabled={processing} className="bg-white border-2 border-slate-200 text-slate-700 px-8 py-4 rounded-2xl hover:bg-slate-50 hover:border-indigo-400 hover:text-indigo-600 flex items-center gap-3 font-black transition-all shadow-sm">
-                                                        <Activity className="w-6 h-6 text-indigo-600" /> Analyze & Download CSV
-                                                    </button>
-                                                </section>
-
-                                                <section className="bg-slate-50/50 p-8 rounded-3xl border border-slate-100">
-                                                    <h2 className="text-2xl font-black text-slate-800 mb-2">PLC Matrix Extraction</h2>
-                                                    <p className="text-slate-500 mb-8 font-medium">템플릿별로 PLC 주소를 매트릭스(Tag x Attribute) 형식으로 추출합니다.</p>
-                                                    <button onClick={extractMatrix} disabled={processing} className="bg-emerald-600 text-white px-8 py-4 rounded-2xl hover:bg-emerald-700 flex items-center gap-3 font-black shadow-xl shadow-emerald-100 transition-all active:scale-95">
-                                                        <Download className="w-6 h-6" /> Download Matrices (ZIP)
-                                                    </button>
-                                                </section>
-
-                                                <section className="bg-slate-50/50 p-8 rounded-3xl border border-slate-100">
-                                                    <h2 className="text-2xl font-black text-slate-800 mb-2">Address Map Extraction</h2>
-                                                    <p className="text-slate-500 mb-8 font-medium">Area별로 그룹화된 주소 맵을 추출합니다.</p>
-                                                    <div className="flex flex-wrap gap-6">
-                                                        <button onClick={() => extractAddresses(false)} disabled={processing} className="bg-indigo-600 text-white px-8 py-4 rounded-2xl hover:bg-indigo-700 flex items-center gap-3 font-black shadow-xl shadow-indigo-100 transition-all active:scale-95">
-                                                            <Download className="w-6 h-6" /> All Tags (ZIP)
-                                                        </button>
-                                                        <button onClick={() => extractAddresses(true)} disabled={processing} className="bg-indigo-600 text-white px-8 py-4 rounded-2xl hover:bg-indigo-700 flex items-center gap-3 font-black shadow-xl shadow-indigo-100 transition-all active:scale-95">
-                                                            <Download className="w-6 h-6" /> Alarm Only (ZIP)
-                                                        </button>
-                                                    </div>
-                                                </section>
-                                            </div>
-                                        )}
-                                    </div>
+                                        </div>
+                                    )
                                 )}
-                            </>
+
+                                {activeSubMenu === 'areas' && (
+                                    !session ? renderUploadScreen("Area Extraction", "Galaxy Dump CSV 파일을 업로드하여 영역별 태그를 추출하세요.") : (
+                                        <div className="p-10">
+                                            <h2 className="text-3xl font-black text-slate-800 mb-2">Area Extraction</h2>
+                                            <p className="text-slate-500 mb-10 font-medium">데이터를 필터링할 Area를 선택하세요. 선택한 Area에 해당하는 행만 유지됩니다.</p>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10 max-h-[500px] overflow-y-auto p-1 custom-scrollbar">
+                                                {session.areas.map(area => (
+                                                    <label key={area} className={cn(
+                                                        "flex items-center gap-4 p-5 rounded-2xl border-2 transition-all cursor-pointer",
+                                                        selectedAreas.includes(area) ? "bg-indigo-50 border-indigo-500 text-indigo-700 shadow-md shadow-indigo-50" : "bg-white border-slate-100 hover:border-slate-300"
+                                                    )}>
+                                                        <input
+                                                            type="checkbox"
+                                                            className="w-6 h-6 rounded-lg border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                                                            checked={selectedAreas.includes(area)}
+                                                            onChange={(e) => {
+                                                                if (e.target.checked) setSelectedAreas([...selectedAreas, area]);
+                                                                else setSelectedAreas(selectedAreas.filter(a => a !== area));
+                                                            }}
+                                                        />
+                                                        <span className="text-base font-bold truncate">{area}</span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                            <div className="flex justify-between items-center pt-8 border-t border-slate-100">
+                                                <div className="text-slate-500 font-bold">
+                                                    <span className="text-indigo-600 text-2xl pr-1">{selectedAreas.length}</span> areas selected
+                                                </div>
+                                                <button
+                                                    onClick={extractAreas}
+                                                    disabled={processing || selectedAreas.length === 0}
+                                                    className="bg-indigo-600 text-white px-10 py-4 rounded-2xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 font-black shadow-xl shadow-indigo-100 transition-all active:scale-95"
+                                                >
+                                                    {processing ? "Processing..." : <><Download className="w-6 h-6" /> Extract & Download</>}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )
+                                )}
+
+                                {activeSubMenu === 'extensions' && (
+                                    !session ? renderUploadScreen("Extensions & PLC", "Galaxy Dump CSV 파일을 업로드하여 확장 속성 및 PLC 매트릭스를 분석하세요.") : (
+                                        <div className="p-10 space-y-12">
+                                            <section className="bg-slate-50/50 p-8 rounded-3xl border border-slate-100">
+                                                <h2 className="text-2xl font-black text-slate-800 mb-2">Extension Analysis</h2>
+                                                <p className="text-slate-500 mb-8 font-medium">모든 템플릿의 `Extensions(MxBigString)` 열을 분석하여 상세 보고서를 생성합니다.</p>
+                                                <button onClick={analyzeExtensions} disabled={processing} className="bg-white border-2 border-slate-200 text-slate-700 px-8 py-4 rounded-2xl hover:bg-slate-50 hover:border-indigo-400 hover:text-indigo-600 flex items-center gap-3 font-black transition-all shadow-sm">
+                                                    <Activity className="w-6 h-6 text-indigo-600" /> Analyze & Download CSV
+                                                </button>
+                                            </section>
+
+                                            <section className="bg-slate-50/50 p-8 rounded-3xl border border-slate-100">
+                                                <h2 className="text-2xl font-black text-slate-800 mb-2">PLC Matrix Extraction</h2>
+                                                <p className="text-slate-500 mb-8 font-medium">템플릿별로 PLC 주소를 매트릭스(Tag x Attribute) 형식으로 추출합니다.</p>
+                                                <button onClick={extractMatrix} disabled={processing} className="bg-emerald-600 text-white px-8 py-4 rounded-2xl hover:bg-emerald-700 flex items-center gap-3 font-black shadow-xl shadow-emerald-100 transition-all active:scale-95">
+                                                    <Download className="w-6 h-6" /> Download Matrices (ZIP)
+                                                </button>
+                                            </section>
+
+                                            <section className="bg-slate-50/50 p-8 rounded-3xl border border-slate-100">
+                                                <h2 className="text-2xl font-black text-slate-800 mb-2">Address Map Extraction</h2>
+                                                <p className="text-slate-500 mb-8 font-medium">Area별로 그룹화된 주소 맵을 추출합니다.</p>
+                                                <div className="flex flex-wrap gap-6">
+                                                    <button onClick={() => extractAddresses(false)} disabled={processing} className="bg-indigo-600 text-white px-8 py-4 rounded-2xl hover:bg-indigo-700 flex items-center gap-3 font-black shadow-xl shadow-indigo-100 transition-all active:scale-95">
+                                                        <Download className="w-6 h-6" /> All Tags (ZIP)
+                                                    </button>
+                                                    <button onClick={() => extractAddresses(true)} disabled={processing} className="bg-indigo-600 text-white px-8 py-4 rounded-2xl hover:bg-indigo-700 flex items-center gap-3 font-black shadow-xl shadow-indigo-100 transition-all active:scale-95">
+                                                        <Download className="w-6 h-6" /> Alarm Only (ZIP)
+                                                    </button>
+                                                </div>
+                                            </section>
+                                        </div>
+                                    )
+                                )}
+                            </div>
                         )}
 
                         {/* INTOUCH VIEW */}
