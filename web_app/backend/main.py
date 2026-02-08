@@ -107,7 +107,7 @@ async def upload_file(file: UploadFile = File(...)):
                 pass
         raise HTTPException(
             status_code=400, 
-            detail="File encoding error. System Platform expects a Galaxy Dump (UTF-16). If you are uploading an InTouch file, please use the InTouch menu."
+            detail="파일 인코딩 오류입니다. System Platform은 Galaxy Dump (UTF-16) 파일을 예상합니다. Intouch 파일을 업로드하려는 경우 InTouch 메뉴를 사용해 주세요."
         )
     except Exception as e:
         if os.path.exists(file_location):

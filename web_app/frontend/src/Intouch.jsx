@@ -75,11 +75,11 @@ export default function Intouch() {
             link.click();
             link.remove();
 
-            setMessage({ type: 'success', text: 'File processed and downloaded successfully!' });
+            setMessage({ type: 'success', text: '파일이 성공적으로 처리되어 다운로드되었습니다!' });
             setFile(null); // Reset after success
         } catch (err) {
             console.error(err);
-            setMessage({ type: 'error', text: 'Processing failed: ' + (err.message) });
+            setMessage({ type: 'error', text: '처리 실패: ' + (err.message) });
         } finally {
             setUploading(false);
         }
@@ -87,9 +87,9 @@ export default function Intouch() {
 
     return (
         <div className="h-full flex flex-col">
-            <h2 className="text-lg font-bold mb-4">Intouch Extraction</h2>
+            <h2 className="text-lg font-bold mb-4">Intouch 데이터 추출 (태그/알람)</h2>
             <p className="text-gray-500 mb-6 text-sm">
-                Upload your Intouch DB CSV dump to extract Alarms and Tag Item Names.
+                Intouch DB CSV 덤프 파일을 업로드하여 알람 및 태그 아이템 이름을 추출하세요.
             </p>
 
             <div className="flex-1 flex flex-col items-center justify-center p-6 bg-gray-50 rounded-lg border border-gray-200">
@@ -105,10 +105,10 @@ export default function Intouch() {
                         )}
                     >
                         <Upload className="w-10 h-10 text-gray-400 mb-4" />
-                        <p className="text-gray-600 font-medium mb-2">Drag & drop CSV file here</p>
-                        <p className="text-sm text-gray-400 mb-4">or click to browse</p>
+                        <p className="text-gray-600 font-medium mb-2">CSV 파일을 여기로 드래그 앤 드롭하세요</p>
+                        <p className="text-sm text-gray-400 mb-4">또는 클릭하여 파일 찾기</p>
                         <label className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition cursor-pointer font-medium text-sm">
-                            Browse File
+                            파일 선택
                             <input type='file' className="hidden" accept=".csv" onChange={handleFileSelect} />
                         </label>
                     </div>
@@ -126,14 +126,14 @@ export default function Intouch() {
                                 className="flex-1 py-2 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
                                 disabled={uploading}
                             >
-                                Cancel
+                                취소
                             </button>
                             <button
                                 onClick={handleProcess}
                                 disabled={uploading}
                                 className="flex-1 py-2 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition flex items-center justify-center gap-2"
                             >
-                                {uploading ? "Processing..." : <><Download className="w-4 h-4" /> Process & Download</>}
+                                {uploading ? "처리 중..." : <><Download className="w-4 h-4" /> 추출 및 다운로드</>}
                             </button>
                         </div>
                     </div>
