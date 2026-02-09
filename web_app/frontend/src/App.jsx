@@ -99,7 +99,7 @@ function App() {
         if (selectedTemplates.length === 0) return;
         setProcessing(true);
         try {
-            const res = await axios.post('/api/extract/templates', { session_id: session.session_id, templates: selectedTemplates }, { responseType: 'blob' });
+            const res = await axios.post('/api/extract/template', { session_id: session.session_id, templates: selectedTemplates }, { responseType: 'blob' });
             const url = window.URL.createObjectURL(new Blob([res.data]));
             handleDownload(url, `extracted_templates.csv`);
             setMessage({ type: 'success', text: 'Templates extracted successfully.' });
@@ -110,7 +110,7 @@ function App() {
         if (selectedAreas.length === 0) return;
         setProcessing(true);
         try {
-            const res = await axios.post('/api/extract/areas', { session_id: session.session_id, areas: selectedAreas }, { responseType: 'blob' });
+            const res = await axios.post('/api/extract/area', { session_id: session.session_id, areas: selectedAreas }, { responseType: 'blob' });
             const url = window.URL.createObjectURL(new Blob([res.data]));
             handleDownload(url, `extracted_areas.csv`);
             setMessage({ type: 'success', text: 'Areas extracted successfully.' });

@@ -249,7 +249,7 @@ def extract_addresses(req: ExtractAddressRequest):
         for area, rows in area_data.items():
             clean_area = area.replace('/', '_').replace('\\', '_')
             if not clean_area: clean_area = "NoArea"
-            filename = f"{clean_area}_Addresses.csv"
+            filename = f"{clean_area}.csv"
             
             csv_io = io.StringIO()
             writer = csv.writer(csv_io, quoting=csv.QUOTE_ALL)
