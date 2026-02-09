@@ -5,7 +5,14 @@ from collections import defaultdict
 class ExtensionAnalyzer:
     def __init__(self, parser):
         self.parser = parser
-        
+
+    def _find_ext_column(self, tmpl):
+        """Find Extensions column index, with or without (MxBigString) suffix."""
+        idx = self.parser.get_column_index(tmpl, "Extensions(MxBigString)")
+        if idx == -1:
+            idx = self.parser.get_column_index(tmpl, "Extensions")
+        return idx
+
     def analyze(self):
         """
         Analyzes Extensions(MxBigString) column for all templates.
@@ -16,11 +23,7 @@ class ExtensionAnalyzer:
         template_names = self.parser.get_template_names()
         
         for tmpl in template_names:
-            # Identify columns
-            ext_col_name = "Extensions(MxBigString)"
-            # Handle potential variation or just use the known one
-            
-            ext_idx = self.parser.get_column_index(tmpl, ext_col_name)
+            ext_idx = self._find_ext_column(tmpl)
             tag_idx = self.parser.get_column_index(tmpl, "Tagname")
             
             if ext_idx == -1 or tag_idx == -1:
@@ -61,50 +64,47 @@ class ExtensionAnalyzer:
         template_names = self.parser.get_template_names()
         
         for tmpl in template_names:
-            ext_idx = self.parser.get_column_index(tmpl, "Extensions(MxBigString)")
+            ext_idx = self._find_ext_column(tmpl)
             tag_idx = self.parser.get_column_index(tmpl, "Tagname")
-            
+
             if ext_idx == -1 or tag_idx == -1:
                 continue
-                
+
             content = self.parser.get_template_content(tmpl)
             if len(content) < 3:
                 continue
-                
+
             data_rows = content[2:]
             reader = csv.reader(data_rows)
-            
-            # Cache column indices for this template to avoid repeated lookups
-            # We don't know which attributes exist yet, so we have to do it dynamically 
-            # or pre-scan header? Pre-scan header is better.
+
             header_line = content[1]
             header_parts = [h.strip().lstrip(':') for h in header_line.split(',')]
-            # Map column name to index
             col_map = {name: i for i, name in enumerate(header_parts)}
-            
+
             for row in reader:
                 if len(row) <= ext_idx or len(row) <= tag_idx:
                     continue
-                    
+
                 tagname = row[tag_idx]
                 xml_data = row[ext_idx]
-                
+
                 if not xml_data or xml_data.strip() == "":
                     continue
-                
+
                 try:
                     root = ET.fromstring(xml_data)
                     attr_extensions = root.findall(".//AttributeExtension/Attribute")
-                    
+
                     for attr in attr_extensions:
                         ext_type = attr.get("ExtensionType")
                         attr_name = attr.get("Name")
-                        
+
                         if ext_type == "inputoutputextension" and attr_name:
-                            # Construct expected column name for InputSource
-                            # Format: AttributeName.InputSource(MxReferenceType)
+                            # Try with type suffix first, then without
                             target_col = f"{attr_name}.InputSource(MxReferenceType)"
-                            
+                            if target_col not in col_map:
+                                target_col = f"{attr_name}.InputSource"
+
                             plc_addr = ""
                             if target_col in col_map:
                                 input_src_idx = col_map[target_col]
@@ -222,27 +222,31 @@ class ExtensionAnalyzer:
         template_names = self.parser.get_template_names()
         
         for tmpl in template_names:
-            ext_idx = self.parser.get_column_index(tmpl, "Extensions(MxBigString)")
+            ext_idx = self._find_ext_column(tmpl)
             tag_idx = self.parser.get_column_index(tmpl, "Tagname")
             area_idx = self.parser.get_column_index(tmpl, "Area")
-            
+
             if tag_idx == -1 or area_idx == -1:
                 continue
-                
+
             content = self.parser.get_template_content(tmpl)
             if len(content) < 3:
                 continue
-            
+
             # Map headers
             header_line = content[1]
             header_parts = [h.strip().lstrip(':') for h in header_line.split(',')]
             col_map = {name: i for i, name in enumerate(header_parts)}
-            
+
             # Dynamic Column Identification: Find all *.InputSource columns
+            # Support both with and without (MxReferenceType) suffix
             input_source_cols = []
             for col_name, idx in col_map.items():
                 if col_name.endswith(".InputSource(MxReferenceType)"):
                     attr_name = col_name.replace(".InputSource(MxReferenceType)", "")
+                    input_source_cols.append((attr_name, idx))
+                elif col_name.endswith(".InputSource"):
+                    attr_name = col_name.replace(".InputSource", "")
                     input_source_cols.append((attr_name, idx))
             
             if not input_source_cols:
