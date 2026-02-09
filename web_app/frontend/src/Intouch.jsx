@@ -104,7 +104,6 @@ export default function Intouch({ mode, file, setFile, message, setMessage }) {
             link.remove();
 
             setMessage({ type: 'success', text: '파일이 성공적으로 처리되어 다운로드되었습니다!' });
-            setFile(null); // Reset after success
         } catch (err) {
             console.error(err);
             setMessage({ type: 'error', text: '처리 실패: ' + (err.message) });

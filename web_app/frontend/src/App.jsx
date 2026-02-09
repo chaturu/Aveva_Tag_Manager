@@ -267,20 +267,32 @@ function App() {
                             {activeMenu === 'intouch' && "InTouch Operations"}
                         </h2>
                     </div>
-                    {session && (
-                        <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-2 bg-indigo-50 px-4 py-1.5 rounded-full border border-indigo-100">
-                                <FileText className="w-4 h-4 text-indigo-500" />
-                                <span className="text-sm font-bold text-indigo-700 truncate max-w-xs">{session.filename}</span>
+                    <div className="flex items-center gap-3">
+                        {session && (
+                            <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 bg-indigo-50 px-3 py-1.5 rounded-full border border-indigo-100">
+                                    <Layers className="w-3.5 h-3.5 text-indigo-500" />
+                                    <span className="text-xs font-bold text-indigo-700 truncate max-w-[160px]">{session.filename}</span>
+                                </div>
+                                <button
+                                    onClick={() => { setSession(null); setMessage(null); }}
+                                    className="text-xs font-bold text-red-400 hover:text-red-600 px-2 py-1 rounded-lg hover:bg-red-50 transition-colors"
+                                >&times;</button>
                             </div>
-                            <button
-                                onClick={() => { setSession(null); setMessage(null); }}
-                                className="text-sm font-bold text-red-500 hover:text-red-700 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors"
-                            >
-                                Close Session
-                            </button>
-                        </div>
-                    )}
+                        )}
+                        {intouchFile && (
+                            <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100">
+                                    <Monitor className="w-3.5 h-3.5 text-emerald-500" />
+                                    <span className="text-xs font-bold text-emerald-700 truncate max-w-[160px]">{intouchFile.name}</span>
+                                </div>
+                                <button
+                                    onClick={() => { setIntouchFile(null); setIntouchMessage(null); }}
+                                    className="text-xs font-bold text-red-400 hover:text-red-600 px-2 py-1 rounded-lg hover:bg-red-50 transition-colors"
+                                >&times;</button>
+                            </div>
+                        )}
+                    </div>
                 </header>
 
                 {/* Content */}
